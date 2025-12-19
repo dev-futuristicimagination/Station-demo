@@ -2,7 +2,7 @@
  * Asoventure Cheese CMS Service
  */
 
-const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org'; 
+const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org';
 const API_URL = `${WP_SITE_URL}/wp-json/wp/v2`;
 
 export interface Article {
@@ -12,6 +12,7 @@ export interface Article {
   publishedAt: string;
   thumbnail?: string;
   content: string;
+  excerpt?: string; // SEO用に抜粋を追加
 }
 
 const MOCK_ARTICLES: Article[] = [
@@ -26,7 +27,8 @@ const MOCK_ARTICLES: Article[] = [
       <p>スタートアップの初期フェーズにおいて、フルタイムのCTOを採用するのはコスト的にもリスクが高いのが現状です。そこで注目されているのが、経験豊富なエンジニアが週1〜2回の頻度で技術顧問的に関わるスタイルです。</p>
       <h2>メリットとデメリット</h2>
       <p>最大のメリットは、複数の企業の技術課題に触れることで、エンジニアとしての視座が圧倒的に高まることです。一方で、コンテキストスイッチのコストや、本業とのスケジュール調整には工夫が必要です。</p>
-    `
+    `,
+    excerpt: "スタートアップの初期フェーズにおいて注目されている「スポットCTO」。週1〜2回の頻度で技術顧問的に関わるスタイルのメリットとデメリットを解説します。"
   },
   {
     id: "mock-2",
@@ -37,7 +39,8 @@ const MOCK_ARTICLES: Article[] = [
     content: `
       <h2>面倒な事務作業をゼロに</h2>
       <p>「冒険（副業）」を楽しむためには、守り（税務・会計）を鉄壁にする必要があります。今回は、freeeやMoneyForwardと連携して、請求書発行から仕訳までを自動化する最強のスタックを紹介します。</p>
-    `
+    `,
+    excerpt: "「冒険」を楽しむために守りを鉄壁に。freeeやMoneyForwardと連携して、請求書発行から仕訳までを自動化する最強のスタックを紹介します。"
   },
   {
     id: "mock-3",
@@ -48,7 +51,8 @@ const MOCK_ARTICLES: Article[] = [
     content: `
       <h2>まずはFigmaを極めろ</h2>
       <p>PhotoshopやIllustratorも大切ですが、現代のUIデザインにおいてFigmaは必須スキルです。まずはトレース（模写）から始めて、デザインの原則を体に叩き込みましょう。</p>
-    `
+    `,
+    excerpt: "現代のUIデザインにおいて必須スキルのFigma。まずはトレースから始めて、デザインの原則を身につけるためのロードマップを公開。"
   }
 ];
 
@@ -57,6 +61,7 @@ interface WPPost {
   date: string;
   title: { rendered: string };
   content: { rendered: string };
+  excerpt: { rendered: string }; // WP APIのレスポンス定義に追加
   _embedded?: {
     'wp:featuredmedia'?: Array<{ source_url: string }>;
     'wp:term'?: Array<Array<{ name: string }>>;
@@ -69,6 +74,9 @@ const mapWpToArticle = (post: WPPost): Article => {
   const category = (post._embedded?.['wp:term']?.[0]?.[0]?.name || 'INSIGHT').toUpperCase();
   const thumbnail = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 
+  // 抜粋からHTMLタグを除去してプレーンテキストにする
+  const plainExcerpt = post.excerpt?.rendered ? post.excerpt.rendered.replace(/<[^>]+>/g, '') : '';
+
   return {
     id: String(post.id),
     title: post.title.rendered,
@@ -76,6 +84,7 @@ const mapWpToArticle = (post: WPPost): Article => {
     publishedAt: formattedDate,
     thumbnail: thumbnail,
     content: post.content.rendered,
+    excerpt: plainExcerpt,
   };
 };
 

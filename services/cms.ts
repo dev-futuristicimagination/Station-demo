@@ -2,22 +2,24 @@
  * Asoventure Cheese CMS Service
  */
 
-const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org'; 
+const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org';
 const API_URL = `${WP_SITE_URL}/wp-json/wp/v2`;
 
 export interface Article {
   id: string;
+  slug: string; // SEO用にスラッグを追加
   title: string;
   category: string;
   publishedAt: string;
   thumbnail?: string;
   content: string;
-  excerpt?: string; // SEO用に抜粋を追加
+  excerpt?: string;
 }
 
 const MOCK_ARTICLES: Article[] = [
   {
     id: "mock-1",
+    slug: "career-strategy-cto",
     title: "「週1から始めるCTO」という選択肢。本業と両立するキャリア戦略",
     category: "CAREER",
     publishedAt: "2025.02.15",
@@ -32,6 +34,7 @@ const MOCK_ARTICLES: Article[] = [
   },
   {
     id: "mock-2",
+    slug: "invoice-tax-hack",
     title: "フリーランス必見！インボイス制度対応と確定申告の自動化ハック",
     category: "TAX & MONEY",
     publishedAt: "2025.02.10",
@@ -44,6 +47,7 @@ const MOCK_ARTICLES: Article[] = [
   },
   {
     id: "mock-3",
+    slug: "web-designer-roadmap",
     title: "未経験からWebデザイナーへ。3ヶ月で月5万円稼ぐロードマップ",
     category: "SKILL UP",
     publishedAt: "2025.02.05",
@@ -58,10 +62,11 @@ const MOCK_ARTICLES: Article[] = [
 
 interface WPPost {
   id: number;
+  slug: string;
   date: string;
   title: { rendered: string };
   content: { rendered: string };
-  excerpt: { rendered: string }; // WP APIのレスポンス定義に追加
+  excerpt: { rendered: string };
   _embedded?: {
     'wp:featuredmedia'?: Array<{ source_url: string }>;
     'wp:term'?: Array<Array<{ name: string }>>;
@@ -73,12 +78,12 @@ const mapWpToArticle = (post: WPPost): Article => {
   const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   const category = (post._embedded?.['wp:term']?.[0]?.[0]?.name || 'INSIGHT').toUpperCase();
   const thumbnail = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-  
-  // 抜粋からHTMLタグを除去してプレーンテキストにする
+
   const plainExcerpt = post.excerpt?.rendered ? post.excerpt.rendered.replace(/<[^>]+>/g, '') : '';
 
   return {
     id: String(post.id),
+    slug: post.slug,
     title: post.title.rendered,
     category: category,
     publishedAt: formattedDate,
@@ -99,6 +104,30 @@ export const getArticles = async (): Promise<Article[]> => {
   }
 };
 
+/**
+ * スラッグ（URLの一部）から記事を検索して取得する
+ * APIリクエスト: /posts?slug=xxx
+ */
+export const getArticleBySlug = async (slug: string): Promise<Article | undefined> => {
+  const mockArticle = MOCK_ARTICLES.find(a => a.slug === slug);
+  if (mockArticle) return mockArticle;
+
+  try {
+    const res = await fetch(`${API_URL}/posts?_embed&slug=${slug}`);
+    if (!res.ok) return undefined;
+    const posts: WPPost[] = await res.json();
+
+    // スラッグ検索は配列で返ってくるため、最初の1件を取得
+    if (posts.length > 0) {
+      return mapWpToArticle(posts[0]);
+    }
+    return undefined;
+  } catch (error) {
+    return undefined;
+  }
+};
+
+// ID取得は後方互換のために残すが、基本はSlugを使用する
 export const getArticle = async (id: string): Promise<Article | undefined> => {
   const mockArticle = MOCK_ARTICLES.find(a => a.id === id);
   if (mockArticle) return mockArticle;

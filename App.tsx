@@ -15,7 +15,7 @@ import { Works } from './components/Works';
 import { Contact } from './components/Contact';
 import { Timeline } from './components/Timeline';
 import { Pricing } from './components/Pricing';
-import { Article, getArticle } from './services/cms';
+import { Article, getArticleBySlug } from './services/cms';
 
 // ----------------------------------------------------------------------
 // スクロール制御用コンポーネント
@@ -29,24 +29,25 @@ const ScrollToTop = () => {
 };
 
 // ----------------------------------------------------------------------
-// 記事詳細ページ (/article/:id)
+// 記事詳細ページ (/article/:slug)
 // ----------------------------------------------------------------------
 const ArticlePage: React.FC = () => {
-  const { id } = useParams();
+  const { slug } = useParams(); // URLからスラッグを取得
   const navigate = useNavigate();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!id) return;
+      if (!slug) return;
       setLoading(true);
-      const data = await getArticle(id);
+      // IDではなくSlugで検索するように変更
+      const data = await getArticleBySlug(slug);
       setArticle(data || null);
       setLoading(false);
     };
     fetchArticle();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -57,11 +58,10 @@ const ArticlePage: React.FC = () => {
     );
   }
 
-  // 記事が見つからなかった場合もArticleView側で制御する
   return (
-    <ArticleView 
-      article={article} 
-      onBack={() => navigate('/')} 
+    <ArticleView
+      article={article}
+      onBack={() => navigate('/')}
     />
   );
 };
@@ -82,8 +82,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleArticleClick = (article: Article) => {
-    // URLを更新して遷移
-    navigate(`/article/${article.id}`);
+    // スラッグを使用したURLに遷移
+    navigate(`/article/${article.slug}`);
   };
 
   return (
@@ -121,7 +121,8 @@ const App: React.FC = () => {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/article/:id" element={<ArticlePage />} />
+            {/* ルートパラメータを :id から :slug に変更 */}
+            <Route path="/article/:slug" element={<ArticlePage />} />
           </Routes>
         </AnimatePresence>
       </div>

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { BrowserRouter, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
+
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Mission } from './components/Mission';
@@ -11,26 +13,66 @@ import { Footer } from './components/Footer';
 import { ArticleView } from './components/ArticleView';
 import { Works } from './components/Works';
 import { Contact } from './components/Contact';
-import { Timeline } from './components/Timeline'; // Flow
-import { Pricing } from './components/Pricing';   // Rewards
-import { Article } from './services/cms';
+import { Timeline } from './components/Timeline';
+import { Pricing } from './components/Pricing';
+import { Article, getArticle } from './services/cms';
 
-type ViewState = 'home' | 'article';
+// ----------------------------------------------------------------------
+// スクロール制御用コンポーネント
+// ----------------------------------------------------------------------
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
-const App: React.FC = () => {
-  const [view, setView] = useState<ViewState>('home');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+// ----------------------------------------------------------------------
+// 記事詳細ページ (/article/:id)
+// ----------------------------------------------------------------------
+const ArticlePage: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [article, setArticle] = useState<Article | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!id) return;
+      setLoading(true);
+      const data = await getArticle(id);
+      setArticle(data || null);
+      setLoading(false);
+    };
+    fetchArticle();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="animate-spin h-10 w-10 border-4 border-cheese-yellow border-t-transparent rounded-full mb-4"></div>
+        <p className="text-xs font-bold tracking-widest text-gray-400 animate-pulse">LOADING ADVENTURE...</p>
+      </div>
+    );
+  }
+
+  // 記事が見つからなかった場合もArticleView側で制御する
+  return (
+    <ArticleView 
+      article={article} 
+      onBack={() => navigate('/')} 
+    />
+  );
+};
+
+// ----------------------------------------------------------------------
+// トップページ (/)
+// ----------------------------------------------------------------------
+const HomePage: React.FC = () => {
+  const navigate = useNavigate();
 
   const handleNavClick = (id: string) => {
-    if (view === 'article') {
-      setView('home');
-      setTimeout(() => scrollToSection(id), 100);
-    } else {
-      scrollToSection(id);
-    }
-  };
-
-  const scrollToSection = (id: string) => {
     if (id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -40,47 +82,50 @@ const App: React.FC = () => {
   };
 
   const handleArticleClick = (article: Article) => {
-    setSelectedArticle(article);
-    setView('article');
+    // URLを更新して遷移
+    navigate(`/article/${article.id}`);
   };
 
   return (
-    <div className="min-h-screen font-sans selection:bg-cheese-yellow selection:text-cheese-dark">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <Header onNavClick={handleNavClick} />
-      
       <main>
-        <AnimatePresence mode="wait">
-          {view === 'home' ? (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div id="home"><Hero /></div>
-              <div id="mission"><Mission /></div>
-              <Features />
-              <Timeline />
-              <Service />
-              <Pricing />
-              <Works />
-              <div id="articles"><News onArticleClick={handleArticleClick} /></div>
-              <FAQ />
-              <div id="contact"><Contact /></div>
-              <Footer />
-            </motion.div>
-          ) : (
-            selectedArticle && (
-              <ArticleView 
-                key="article"
-                article={selectedArticle} 
-                onBack={() => setView('home')} 
-              />
-            )
-          )}
-        </AnimatePresence>
+        <div id="home"><Hero /></div>
+        <div id="mission"><Mission /></div>
+        <Features />
+        <Timeline />
+        <Service />
+        <Pricing />
+        <Works />
+        <div id="articles"><News onArticleClick={handleArticleClick} /></div>
+        <FAQ />
+        <div id="contact"><Contact /></div>
       </main>
-    </div>
+      <Footer />
+    </motion.div>
+  );
+};
+
+// ----------------------------------------------------------------------
+// メインアプリケーション
+// ----------------------------------------------------------------------
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <div className="min-h-screen font-sans selection:bg-cheese-yellow selection:text-cheese-dark">
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/article/:id" element={<ArticlePage />} />
+          </Routes>
+        </AnimatePresence>
+      </div>
+    </BrowserRouter>
   );
 };
 

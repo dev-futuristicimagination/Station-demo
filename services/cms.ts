@@ -2,7 +2,7 @@
  * Asoventure Cheese CMS Service
  */
 
-const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org';
+const WP_SITE_URL = (import.meta as any).env?.VITE_WP_URL || 'https://demo.wp-api.org'; 
 const API_URL = `${WP_SITE_URL}/wp-json/wp/v2`;
 
 export interface Article {
@@ -73,7 +73,7 @@ const mapWpToArticle = (post: WPPost): Article => {
   const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   const category = (post._embedded?.['wp:term']?.[0]?.[0]?.name || 'INSIGHT').toUpperCase();
   const thumbnail = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-
+  
   // 抜粋からHTMLタグを除去してプレーンテキストにする
   const plainExcerpt = post.excerpt?.rendered ? post.excerpt.rendered.replace(/<[^>]+>/g, '') : '';
 

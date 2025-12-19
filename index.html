@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Asoventure Cheese | 副業を、もっと冒険に。</title>
+    
+    <!-- SEO & OGP -->
+    <meta name="description" content="アソベンチャーチーズは、ハイスキルな副業人材と企業をつなぐ冒険型マッチングプラットフォームです。" />
+    <meta property="og:title" content="Asoventure Cheese" />
+    <meta property="og:description" content="副業を、もっと冒険に。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                        english: ['"Montserrat"', 'sans-serif'],
+                    },
+                    colors: {
+                        cheese: {
+                            yellow: '#FFD600', // チーズイエロー
+                            light: '#FFFDE7',
+                            dark: '#1A1A1A',   // ほぼ黒
+                            text: '#2D2D2D',
+                            accent: '#FF4757', // アクセントの赤
+                            gray: '#F3F4F6'
+                        }
+                    },
+                    animation: {
+                        'slow-pan': 'pan 20s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'marquee': 'marquee 25s linear infinite',
+                    },
+                    keyframes: {
+                        pan: {
+                            '0%': { backgroundPosition: '0% 0%' },
+                            '100%': { backgroundPosition: '100% 100%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #2D2D2D;
+            -webkit-font-smoothing: antialiased;
+        }
+        .text-outline {
+             -webkit-text-stroke: 1px rgba(0, 0, 0, 0.1);
+             color: transparent;
+        }
+        .bg-mesh {
+            background-color: #FFD600;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(50,100%,80%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 100%, hsla(40,100%,60%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(0,100%,90%,1) 0, transparent 50%);
+        }
+        /* Prose customization for article content */
+        .prose h2 {
+            font-size: 1.875rem;
+            font-weight: 900;
+            border-bottom: 4px solid #FFD600;
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        .prose p {
+            line-height: 2;
+            margin-bottom: 1.5rem;
+            color: #334155;
+        }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "framer-motion": "https://esm.sh/framer-motion@^12.23.26",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
